@@ -69,12 +69,6 @@
      ("-" digit (arbno digit) "." digit (arbno digit)) number)
     (texto
       ("_" (arbno letter) "_") string)
-    (symbol
-      ("<" ">" "<=" ">=" "==" "!=") symbol)
-    ;(boolean
-     ;("true") true)
-    ;(boolean
-     ;("false") false)
     ))
 
 ;;=========================================================================
@@ -161,13 +155,12 @@
       (primitiva-concat () (string-append (car args) (cadr args)))
 
       ;; Comparaciones binarias
-      (primitiva-mayor () (valor-verdad? (> (car args) (cadr args))))
-      (primitiva-menor () (valor-verdad? (< (car args) (cadr args))))
-      (primitiva-mayor-igual () (valor-verdad? (>= (car args) (cadr args))))
-      (primitiva-menor-igual ()(valor-verdad? (<= (car args) (cadr args))))
-      (primitiva-comparador-igual () (valor-verdad? (= (car args) (cadr args))))
-      (primitiva-diferente () (valor-verdad? (not (= (car args) (cadr args)))))
-
+     (primitiva-mayor () (valor-verdad? (if (> (car args) (cadr args)) 1 0)))
+      (primitiva-menor () (valor-verdad? (if (< (car args) (cadr args)) 1 0)))
+      (primitiva-mayor-igual () (valor-verdad? (if (>= (car args) (cadr args)) 1 0)))
+      (primitiva-menor-igual () (valor-verdad? (if (<= (car args) (cadr args)) 1 0)))
+      (primitiva-comparador-igual () (valor-verdad? (if (= (car args) (cadr args)) 1 0)))
+      (primitiva-diferente () (valor-verdad? (if (not (= (car args) (cadr args))) 1 0)))
 
       (else (eopl:error 'apply-primitive "Operador primitivo desconocido: ~s" prim)))))
 
@@ -184,6 +177,11 @@
       (else (eopl:error 'apply-primitive "Operador primitivo desconocido: ~s" prim)))))
       
 
+
+
+(define valor-verdad?
+  (lambda (x)
+    (if (zero? x ) 0 1)))
 
 
 ;;=========================================================================
@@ -316,9 +314,8 @@
 ;;=========================================================================
 ;;=========================================================================
 
-(define valor-verdad?
-  (lambda (x)
-    (if (zero? x) 0 1)))
+
+
 
 
 
