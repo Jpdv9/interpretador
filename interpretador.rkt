@@ -29,6 +29,8 @@
 ;;               primapp-bin-exp (exp1 prim-binaria exp2)
 ;;            := <primitiva-unaria> (<expresion>)
 ;;               primapp-un-exp (prim-unaria exp)
+;;            := Si <expresion> "{" <expresion>  "}" "sino" "{" <expresion> "}"
+;;               condicional-exp (test-exp true-exp false-exp)
 
 ;; <primitiva-binaria> :=  + (primitiva-suma)
 ;;  :=  ~ (primitiva-resta)      
@@ -68,7 +70,7 @@
     (numero
      ("-" digit (arbno digit) "." digit (arbno digit)) number)
     (texto
-      ("_" (arbno letter) "_") string)
+      ("\"" (arbno letter) "\"") string)
     ))
 
 ;;=========================================================================
@@ -84,6 +86,8 @@
     (expression ("(" expression primitive-bin expression ")") primapp-bin-exp)
     (expression (primitive-un "(" expression ")") primapp-un-exp)
 
+    ;; IF
+    (expression ( "Si" expression "{" expression "}" "sino" "{" expression "}" ) condicional-exp)
 
     ;; primitivas binarias
     (primitive-bin ("+") primitiva-suma)
@@ -135,12 +139,17 @@
       (texto-lit (txt) txt)
       (var-exp (id) (buscar-variable env id))
       (primapp-bin-exp (exp1 prim-bin exp2)
-                       ((or apply-primitive-bin apply-primitive-un) prim-bin
+                       ( apply-primitive-bin  prim-bin
                                         (list (eval-expression exp1 env)
                                               (eval-expression exp2 env))))
       (primapp-un-exp (prim-un exp)
-                      ((or apply-primitive-bin apply-primitive-un) prim-un
-                                       (list (eval-expression exp env)))))))
+                      ( apply-primitive-un prim-un
+                                       (list (eval-expression exp env))))
+      (condicional-exp (test-exp true-exp false-exp)        
+                         (if (true-value? (eval-expression test-exp env))
+                             (eval-expression true-exp env)
+                             (eval-expression false-exp env)))
+      )))
 
 
 
@@ -183,6 +192,9 @@
   (lambda (x)
     (if (zero? x ) 0 1)))
 
+(define true-value?
+  (lambda (x)
+    (not (zero? x))))
 
 ;;=========================================================================
 ;;=========================================================================

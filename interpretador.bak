@@ -63,14 +63,12 @@
      (digit (arbno digit)) number)
     (numero
      ("-" digit (arbno digit)) number)
-    (decimal
+    (numero
     (digit (arbno digit) "." digit (arbno digit)) number)
-    (decimal
+    (numero
      ("-" digit (arbno digit) "." digit (arbno digit)) number)
     (texto
       ("_" (arbno letter) "_") string)
-    ;;(boolean
-     ;;("#t" "#f") boolean)
     ))
 
 ;;=========================================================================
@@ -85,8 +83,6 @@
     (expression (texto) texto-lit)
     (expression ("(" expression primitive-bin expression ")") primapp-bin-exp)
     (expression (primitive-un "(" expression ")") primapp-un-exp)
-
-   
 
 
     ;; primitivas binarias
@@ -135,35 +131,57 @@
 (define eval-expression
   (lambda (exp env)
     (cases expression exp
-      (numero-lit (datum) datum) 
-      (texto-lit (txt) txt) 
+      (numero-lit (num) num)
+      (texto-lit (txt) txt)
       (var-exp (id) (buscar-variable env id))
-      (primapp-bin-exp (exp1 prim-bin exp2) 
-                       (let ((val1 (eval-expression exp1 env))
-                             (val2 (eval-expression exp2 env)))
-                         (cond
-                           [(eq? prim-bin '+) (+ val1 val2)]
-                           [(eq? prim-bin '(-) (if (number? val2) (- val1 val2) (eopl:error "Subtraction requires numeric values")))]
-                           [(eq? prim-bin '(/) (/ val1 val2))]
-                           [(eq? prim-bin '(*)) (* val1 val2)]
-                           [(eq? prim-bin 'concat) (string-append val1 val2)]
-                           [(eq? prim-bin '> ) (> val1 val2)]
-                           [(eq? prim-bin '< ) (< val1 val2)]
-                           [(eq? prim-bin '>=) (>= val1 val2)]
-                           [(eq? prim-bin '<=) (<= val1 val2)]
-                           [(eq? prim-bin '!=) (not (= val1 val2))]
-                           [(eq? prim-bin '==) (= val1 val2)]
-                           [else (eopl:error "Unknown binary operator" prim-bin)])))
+      (primapp-bin-exp (exp1 prim-bin exp2)
+                       ((or apply-primitive-bin apply-primitive-un) prim-bin
+                                        (list (eval-expression exp1 env)
+                                              (eval-expression exp2 env))))
       (primapp-un-exp (prim-un exp)
-                      (let ((val (eval-expression exp env)))
-                        (cond
-                          [(eq? prim-un 'longitud) (if (string? val) (string-length val) (eopl:error "Length requires a string"))]
-                          [(eq? prim-un 'add1) (if (number? val) (+ val 1) (eopl:error "add1 requires a number"))]
-                          [(eq? prim-un 'sub1) (if (number? val) (- val 1) (eopl:error "sub1 requires a number"))]
-                          [(eq? prim-un 'neg) (not val)]
-                          [else (eopl:error "Unknown unary operator" prim-un)]))))))
+                      ((or apply-primitive-bin apply-primitive-un) prim-un
+                                       (list (eval-expression exp env)))))))
 
 
+
+(define apply-primitive-bin
+  (lambda (prim args)
+    (cases primitive-bin prim
+      ;; Operaciones binarias
+      (primitiva-suma () (+ (car args) (cadr args)))
+      (primitiva-resta () (- (car args) (cadr args)))
+      (primitiva-multi () (* (car args) (cadr args)))
+      (primitiva-div () (/ (car args) (cadr args)))
+      (primitiva-concat () (string-append (car args) (cadr args)))
+
+      ;; Comparaciones binarias
+     (primitiva-mayor () (valor-verdad? (if (> (car args) (cadr args)) 1 0)))
+      (primitiva-menor () (valor-verdad? (if (< (car args) (cadr args)) 1 0)))
+      (primitiva-mayor-igual () (valor-verdad? (if (>= (car args) (cadr args)) 1 0)))
+      (primitiva-menor-igual () (valor-verdad? (if (<= (car args) (cadr args)) 1 0)))
+      (primitiva-comparador-igual () (valor-verdad? (if (= (car args) (cadr args)) 1 0)))
+      (primitiva-diferente () (valor-verdad? (if (not (= (car args) (cadr args))) 1 0)))
+
+      (else (eopl:error 'apply-primitive "Operador primitivo desconocido: ~s" prim)))))
+
+
+(define apply-primitive-un
+  (lambda (prim args)
+    (cases primitive-un prim
+       ;; Operaciones unarias
+      (primitiva-add1 () (+ (car args) 1))
+      (primitiva-sub1 () (- (car args) 1))
+      (primitiva-longitud () (string-length (car args)))
+      (primitiva-negacion-booleana ()(valor-verdad? (not (car args))))
+
+      (else (eopl:error 'apply-primitive "Operador primitivo desconocido: ~s" prim)))))
+      
+
+
+
+(define valor-verdad?
+  (lambda (x)
+    (if (zero? x ) 0 1)))
 
 
 ;;=========================================================================
@@ -269,6 +287,8 @@
                                              (buscar-variable old-env sym)))))))
 
 
+
+
 ;;=========================================================================
 ;Funciones Auxiliares
 
@@ -293,6 +313,8 @@
 
 ;;=========================================================================
 ;;=========================================================================
+
+
 
 
 
