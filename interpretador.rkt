@@ -31,6 +31,8 @@
 ;;               primapp-un-exp (prim-unaria exp)
 ;;            := Si <expresion> "{" <expresion>  "}" "sino" "{" <expresion> "}"
 ;;               condicional-exp (test-exp true-exp false-exp)
+;;            := declarar ({<identificador> = <expresion> ';' }*)) { <expresion> }
+;;               variableLocal-exp (ids exps cuerpo)
 
 ;; <primitiva-binaria> :=  + (primitiva-suma)
 ;;  :=  ~ (primitiva-resta)      
@@ -59,7 +61,7 @@
      (whitespace) skip)
     (comment
      ("%" (arbno (not #\newline))) skip)
-    (identifier
+    (identificador
      ("@" letter (arbno (or letter digit "_")))  symbol)
     (numero
      (digit (arbno digit)) number)
@@ -81,13 +83,17 @@
 (define grammar-simple-interpreter
   '((program (expression) a-program)
     (expression (numero) numero-lit)
-    (expression (identifier) var-exp)
+    (expression (identificador) var-exp)
     (expression (texto) texto-lit)
     (expression ("(" expression primitive-bin expression ")") primapp-bin-exp)
     (expression (primitive-un "(" expression ")") primapp-un-exp)
 
     ;; IF
     (expression ( "Si" expression "{" expression "}" "sino" "{" expression "}" ) condicional-exp)
+
+    ;;Variable Local
+    (expression ( "declarar" "(" (arbno identificador "=" expression ";") ")" "{" expression "}") variableLocal-exp)
+    
 
     ;; primitivas binarias
     (primitive-bin ("+") primitiva-suma)
@@ -149,6 +155,11 @@
                          (if (true-value? (eval-expression test-exp env))
                              (eval-expression true-exp env)
                              (eval-expression false-exp env)))
+
+       (variableLocal-exp (ids exps cuerpo)
+        (let* ((vals (map (lambda (e) (eval-expression e env)) exps))
+               (nuevo-env (extend-env ids vals env)))
+          (eval-expression cuerpo nuevo-env)))
       )))
 
 
