@@ -101,7 +101,7 @@
                 procedimiento-exp)
     
     ;;Evaluar
-    (expression ("evaluar" expression "(" (arbno expression ",") ")" "finEval") app-exp)
+    (expression ("evaluar" expression "(" (separated-list expression ",") ")" "finEval") app-exp)
 
     ;; primitivas binarias
     (primitive-bin ("+") primitiva-suma)
