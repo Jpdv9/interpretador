@@ -97,7 +97,7 @@
     (expression ( "declarar" "(" (arbno identificador "=" expression ";") ")" "{" expression "}") variableLocal-exp)
 
     ;;Procedimiento
-    (expression ("procedimiento" "(" (arbno identificador  )  ")" "{" expression "}")
+    (expression ("procedimiento" "(" (separated-list identificador "," )  ")" "{" expression "}")
                 procedimiento-exp)
     
     ;;Evaluar
