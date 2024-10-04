@@ -33,6 +33,8 @@
 ;;               condicional-exp (test-exp true-exp false-exp)
 ;;            := declarar ({<identificador> = <expresion> ';' }*)) { <expresion> }
 ;;               variableLocal-exp (ids exps cuerpo)
+;;            := procedimiento (<identificador>*(',') ) "{" <expresion> "}"
+;;               procedimiento-ex (ids cuero)
 
 ;; <primitiva-binaria> :=  + (primitiva-suma)
 ;;  :=  ~ (primitiva-resta)      
@@ -93,7 +95,13 @@
 
     ;;Variable Local
     (expression ( "declarar" "(" (arbno identificador "=" expression ";") ")" "{" expression "}") variableLocal-exp)
+
+    ;;Procedimiento
+    (expression ("procedimiento" "(" (arbno identificador  )  ")" "{" expression "}")
+                procedimiento-exp)
     
+    ;;Evaluar
+    (expression ("evaluar" expression "(" (arbno expression ",") ")" "finEval") app-exp)
 
     ;; primitivas binarias
     (primitive-bin ("+") primitiva-suma)
@@ -160,6 +168,15 @@
         (let* ((vals (map (lambda (e) (eval-expression e env)) exps))
                (nuevo-env (extend-env ids vals env)))
           (eval-expression cuerpo nuevo-env)))
+      
+      (procedimiento-exp (ids cuerpo)
+                         (cerradura ids cuerpo env))
+
+        (app-exp (proc-exp args)
+           (let* ((proc (eval-expression proc-exp env)) 
+                  (arg-vals (map (lambda (arg) (eval-expression arg env)) args))
+                  (new-env (extend-env (proc-val-ids proc) arg-vals (proc-val-env proc))))
+             (eval-expression (proc-val-body proc) new-env)))
       )))
 
 
@@ -175,7 +192,7 @@
       (primitiva-concat () (string-append (car args) (cadr args)))
 
       ;; Comparaciones binarias
-     (primitiva-mayor () (valor-verdad? (if (> (car args) (cadr args)) 1 0)))
+      (primitiva-mayor () (valor-verdad? (if (> (car args) (cadr args)) 1 0)))
       (primitiva-menor () (valor-verdad? (if (< (car args) (cadr args)) 1 0)))
       (primitiva-mayor-igual () (valor-verdad? (if (>= (car args) (cadr args)) 1 0)))
       (primitiva-menor-igual () (valor-verdad? (if (<= (car args) (cadr args)) 1 0)))
@@ -207,6 +224,38 @@
   (lambda (x)
     (not (zero? x))))
 
+
+(define-datatype procval procval?
+  (cerradura
+   (lista-id (list-of symbol?))
+   (exp expression?)
+   (amb environment?)))
+
+(define apply-closure
+  (lambda (proc args)
+    (cases procval proc
+      (cerradura (ids cuerpo amb)
+                 (let ((nuevo-env (extend-env ids args amb)))
+                   (eval-expression cuerpo nuevo-env))))))
+
+
+(define proc-val-ids
+  (lambda (proc)
+    (cases procval proc
+      (cerradura (ids exp env) ids))))
+
+(define proc-val-body
+  (lambda (proc)
+    (cases procval proc
+      (cerradura (ids exp env) exp))))
+
+(define proc-val-env
+  (lambda (proc)
+    (cases procval proc
+      (cerradura (ids exp env) env))))
+
+
+
 ;;=========================================================================
 ;;=========================================================================
 ;; Interpretador
@@ -231,13 +280,6 @@
 ;;=========================================================================
 ;;=========================================================================
 
-
-;Procedimientos
-(define-datatype procval procval?
-  (closure
-   (ids (list-of symbol?))
-   (body expression?)
-   (env environment?)))
 
 
 ;;=========================================================================
@@ -304,7 +346,7 @@
       (recursively-extended-env-record (proc-names idss bodies old-env)
                                        (let ((pos (list-find-position sym proc-names))) 
                                          (if (number? pos)
-                                             (closure (list-ref idss pos)
+                                             (cerradura (list-ref idss pos)
                                                       (list-ref bodies pos)
                                                       env) 
                                              (buscar-variable old-env sym)))))))
