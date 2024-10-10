@@ -516,26 +516,44 @@ E) Crea una función @integrantes que muestre los nombres de los integrantes
    del grupo y adicionalmente crea un decorador que al invocarlo salude
    a los integrantes.
 
+
+
+declarar ( @integrantes = procedimiento() {"Robinson_y_Sara"};
+            
+           @saludar = procedimiento(@f) {
+                      ("Hola:" concat evaluar @f() finEval)
+                      })
+
+{
+
+            declarar (@decorate = procedimiento(){evaluar @saludar (@integrantes) finEval})
+                 {
+                   evaluar @decorate() finEval
+                 }
+
+}
+
+
+
 declarar (@integrantes = procedimiento() {
-  "Robinson_y_Sara"
-}) {
-  @integrantes
-}
+                    "Robinson_y_Sara"
+                     }) {
+                       @integrantes
+                     }
+     declarar( @saludar = procedimiento(@f) {
+                      procedimiento() {
+                       ("Hola:" concat  @f)
+                      }
+                    }) {
+                      @saludar
+                     }
+
+ declarar (@decorate = evaluar @saludar (@integrantes) finEval)
+                 {
+                    @decorate
+                 }
 
 
-declarar (@saludar = procedimiento(f) {
-   procedimiento() {
-    ("Hola:" concat f())
-  }
-}) {
-  @saludar
-}
-
-declarar (@decorate = evaluar @saludar (@integrantes) finEval) {
-  @decorate
-}
-
-evaluar @decorate () finEval 
 
 ;;=========================================================================
 
