@@ -95,7 +95,7 @@
 
     ;; Manejo de texto: cadenas de caracteres encerradas entre comillas dobles
     (texto
-      ("\"" (arbno letter) "\"") string)
+      ("\"" (arbno (or letter digit "_" ":")) "\"") string)
     ))
 
 
@@ -117,7 +117,7 @@
     (expression ( "Si" expression "{" expression "}" "sino" "{" expression "}" ) condicional-exp)
 
     ;; Variable Local
-    (expression ( "declarar" "(" (arbno identificador "=" expression ";") ")" "{" expression "}") variableLocal-exp)
+    (expression ( "declarar" "(" (separated-list identificador "=" expression ";") ")" "{" expression "}") variableLocal-exp)
 
     ;; Procedimiento
     (expression ("procedimiento" "(" (separated-list identificador "," )  ")" "{" expression "}") procedimiento-exp)
@@ -516,8 +516,26 @@ E) Crea una función @integrantes que muestre los nombres de los integrantes
    del grupo y adicionalmente crea un decorador que al invocarlo salude
    a los integrantes.
 
+declarar (@integrantes = procedimiento() {
+  "Robinson_y_Sara"
+}) {
+  @integrantes
+}
 
 
+declarar (@saludar = procedimiento(f) {
+   procedimiento() {
+    ("Hola:" concat f())
+  }
+}) {
+  @saludar
+}
+
+declarar (@decorate = evaluar @saludar (@integrantes) finEval) {
+  @decorate
+}
+
+evaluar @decorate () finEval 
 
 ;;=========================================================================
 
