@@ -535,25 +535,6 @@ declarar ( @integrantes = procedimiento() {"Robinson_y_Sara"};
 
 
 
-declarar (@integrantes = procedimiento() {
-                    "Robinson_y_Sara"
-                     }) {
-                       @integrantes
-                     }
-     declarar( @saludar = procedimiento(@f) {
-                      procedimiento() {
-                       ("Hola:" concat  @f)
-                      }
-                    }) {
-                      @saludar
-                     }
-
- declarar (@decorate = evaluar @saludar (@integrantes) finEval)
-                 {
-                    @decorate
-                 }
-
-
 
 ;;=========================================================================
 
