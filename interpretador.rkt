@@ -448,6 +448,11 @@ A) Escriba un programa en su lenguaje de programación que contenga un
    procedimiento @sumarDigitos que le permita sumar los dígitos de un número
    entero positivo. evaluar @sumarDigitos(147) finEval deberá retornar 12.
 
+  
+  % sumarDigitos: numero-lit -> numero-lit
+  % Propósito: Sumar los dígitos de un número entero positivo.
+  % Uso: evaluar @sumarDigitos(147) finEval => 12
+
 letrec [
         @dividirEntero(@numerador , @denominador) =
           Si (@numerador < @denominador) {
@@ -475,14 +480,19 @@ B) Escriba un programa en su lenguaje de programación que contenga un
    gramática para funciones recursivas debe ser propuesta por el grupo,
    incluya dos ejemplos de uso para el factorial de 5 y el factorial de 10.
 
-FACTORIAL DE 5:
+
+  % factorial: numero-lit -> numero-lit
+  % Propósito: Calcular el factorial de un número.
+  % Uso: evaluar @factorial(8) finEval => 40320
+
+% FACTORIAL DE 5:
 
 letrec [ @factorial (@number) = Si (@number == 0) {1} sino {(@number * evaluar @factorial (sub1(@number)) finEval)}]
        in
         evaluar @factorial (5) finEval
 
 
-FACTORIAL DE 10:
+% FACTORIAL DE 10:
 
 letrec [ @factorial (@number) = Si (@number == 0) {1} sino {(@number * evaluar @factorial (sub1(@number)) finEval)}]
        in
@@ -496,6 +506,11 @@ C) Escriba un programa en su lenguaje de programación que contenga un
    ejercicio no será valido. Incluya un llamado a la función recursiva:
    "evaluar @potencia (4, 2) finEval " que retornaría 16.
 
+  
+  % potencia: numero-lit x numero-lit -> numero-lit
+  % Propósito: Calcular la potencia de un número utilizando recursión.
+  % Uso: evaluar @potencia(10, 2) finEval => 100
+
 letrec [ @potencia(@base, @exponente) = Si (@exponente == 0) {1} sino {(@base * evaluar @potencia(@base, (@exponente ~ 1)) finEval)}]
           in 
             evaluar @potencia(4,2) finEval
@@ -505,6 +520,11 @@ letrec [ @potencia(@base, @exponente) = Si (@exponente == 0) {1} sino {(@base * 
 D) Escriba un programa que sume los números en un rango de valores positivos
    [a,b], donde siempre se cumple en la invocación a < b:  Por ejemplo
    "evaluar @sumaRango (2, 5) finEval  "  retornaría 14.
+
+  
+  % sumaRango: numero-lit x numero-lit -> numero-lit
+  % Propósito: Sumar todos los números en un rango [a, b] donde a < b, utilizando recursión.
+  % Uso: evaluar @sumaRango(3, 7) finEval => 25
 
 letrec [ @sumaRango (@num1, @num2) = Si (@num1 > @num2) {0} sino {(@num1 + evaluar @sumaRango ((@num1 + 1) , @num2) finEval)}]
           in
@@ -517,20 +537,36 @@ E) Crea una función @integrantes que muestre los nombres de los integrantes
    a los integrantes.
 
 
+  % integrantes: -> texto.lit
+  % Propósito: Mostrar los nombres de los integrantes del grupo.
+  % Uso: evaluar @integrantes() finEval => "JeanPaul_y_Andres"
 
-declarar ( @integrantes = procedimiento() {"Robinson_y_Sara"};
-            
-           @saludar = procedimiento(@f) {
-                      ("Hola:" concat evaluar @f() finEval)
-                      })
+declarar (
+  % Definir @integrantes
+  @integrantes = procedimiento() {
+    "JeanPaul_y_Andres"
+  };
+
+  
+  % saludar: procedimiento-exp -> texto.lit
+  % Propósito: Saludar a los integrantes usando la función decoradora.
+  % Uso: evaluar @decorate() finEval => "Hola: JeanPaul_y_Andres"
+
+  % Definir @saludar para saludar a los integrantes
+  @saludar = procedimiento(@f) {
+    ("Hola:" concat evaluar @f() finEval)
+  })
 
 {
 
-            declarar (@decorate = procedimiento(){evaluar @saludar (@integrantes) finEval})
-                 {
-                   evaluar @decorate() finEval
-                 }
-
+  % Decorador que usar @saludar
+  declarar (
+    @decorate = procedimiento() {
+      evaluar @saludar(@integrantes) finEval
+    })
+  {
+    evaluar @decorate() finEval
+  }
 }
 
 
@@ -546,9 +582,42 @@ F)  Modifique el ejercicio anterior para que el decorador reciba como
     // Deberá retornar "Hola:Robinson_y_Sara_ProfesoresFLP"
 
 
+  % profesores -> texto.lit
+  % Propósito: Mostrar los nombres de los profesores del grupo.
+  % Uso: evaluar @profesores() finEval => "Robinson_y_Sara"
+
+declarar (
+  % Definir @profesores
+  @profesores = procedimiento() {
+    "Robinson_y_Sara"
+  };
+
+  
+  % saludar: procedimiento-exp -> texto.lit
+  % Propósito: Saludar a los profesores usando la función decoradora.
+  % Uso: evaluar @decorate("_ProfesoresFLP") finEval => "Hola:Robinson_y_Sara_ProfesoresFLP"
+
+  % Definir @saludar para saludar a los profesores
+  @saludar = procedimiento(@f) {
+    ("Hola:" concat evaluar @f() finEval)
+  })
+
+{
+
+  % Decorador que usa la función @saludar y añade un mensaje adicional al final
+  declarar (
+    @decorate = procedimiento(@message) {
+      (evaluar @saludar(@profesores) finEval concat @message)
+    })
+  {
+    % Invocar el decorador con el mensaje adicional "_ProfesoresFLP"
+    evaluar @decorate("_ProfesoresFLP") finEval
+  }
+
+}
+
 
 ;;=========================================================================
-
 
 
 |#
